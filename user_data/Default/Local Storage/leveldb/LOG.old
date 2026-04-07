@@ -1,0 +1,3 @@
+2026/04/07-14:32:12.604 11577 Reusing MANIFEST /workspaces/jobs/user_data/Default/Local Storage/leveldb/MANIFEST-000001
+2026/04/07-14:32:12.618 11577 Recovering log #3
+2026/04/07-14:32:12.619 11577 Reusing old log /workspaces/jobs/user_data/Default/Local Storage/leveldb/000003.log 

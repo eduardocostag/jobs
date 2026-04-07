@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@supabase/supabase-js": "^2.48.1",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "fs": "^0.0.1-security",
+    "node-fetch": "^3.3.2",
+    "path": "^0.12.7",
+    "puppeteer": "^24.40.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}
