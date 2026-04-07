@@ -1,4 +1,7 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+require('dotenv').config();
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "AIzaSyDaBTk7liYKoLpP9nPUYQd1aaOzisRN4tw");
 
 /**
  * Usa IA para decidir a próxima ação na página baseada no HTML simplificado.
