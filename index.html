@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobMatch AI — Seu próximo emprego está a um swipe</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+:root {
+  --bg: #080b14;
+  --surface: #0f1420;
+  --surface2: #161c2d;
+  --surface3: #1e2638;
+  --border: rgba(99,120,200,0.15);
+  --accent: #4f6ef7;
+  --accent2: #7c3aed;
+  --neon: #00e5ff;
+  --green: #00e676;
+  --red: #ff4757;
+  --yellow: #ffd600;
+  --text: #e8eaf6;
+  --text2: #8892b0;
+  --text3: #4a5568;
+  --card-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  --glow: 0 0 30px rgba(79,110,247,0.3);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* ========== BACKGROUND ========== */
+.bg-mesh {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(79,110,247,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 90%, rgba(124,58,237,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 60% 40%, rgba(0,229,255,0.04) 0%, transparent 60%);
+}
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(99,120,200,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(99,120,200,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ========== LAYOUT ========== */
+#app { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; }
+
+/* ========== SCREENS ========== */
+.screen { display: none; height: 100%; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ========== AUTH SCREEN ========== */
+#screen-auth {
+  align-items: center; justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.6s ease;
+}
+.auth-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 42px; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--neon));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  letter-spacing: -1px; margin-bottom: 6px;
+}
+.auth-tagline {
+  color: var(--text2); font-size: 14px; margin-bottom: 48px;
+  font-style: italic;
+}
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 36px 32px;
+  width: 100%; max-width: 400px;
+  box-shadow: var(--card-shadow);
+}
+.auth-tabs {
+  display: flex; gap: 0; margin-bottom: 28px;
+  background: var(--surface2); border-radius: 12px; padding: 4px;
+}
+.auth-tab {
+  flex: 1; padding: 10px; border: none; background: none;
+  color: var(--text2); font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  border-radius: 10px; transition: all 0.2s;
+}
+.auth-tab.active {
+  background: var(--accent); color: white;
+  box-shadow: 0 4px 16px rgba(79,110,247,0.4);
+}
+.form-group { margin-bottom: 16px; }
+.form-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; letter-spacing: 0.5px; text-transform: uppercase; }
+.form-input {
+  width: 100%; padding: 13px 16px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,110,247,0.15); }
+.btn-primary {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none; border-radius: 12px;
+  color: white; font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  transition: all 0.2s; letter-spacing: 0.3px;
+  box-shadow: 0 8px 24px rgba(79,110,247,0.35);
+  margin-top: 8px;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(79,110,247,0.5); }
+.btn-primary:active { transform: translateY(0); }
+.divider { text-align: center; color: var(--text3); font-size: 12px; margin: 20px 0; position: relative; }
+.divider::before, .divider::after {
+  content: ''; position: absolute; top: 50%;
+  width: 42%; height: 1px; background: var(--border);
+}
+.divider::before { left: 0; } .divider::after { right: 0; }
+.btn-oauth {
+  width: 100%; padding: 12px; margin-bottom: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 12px; color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+}
+.btn-oauth:hover { border-color: var(--accent); background: var(--surface3); }
+
+/* ========== PROFILE SETUP SCREEN ========== */
+#screen-profile {
+  padding: 0; overflow-y: auto;
+  animation: slideUp 0.5s ease;
+}
+.profile-header {
+  padding: 24px 20px 16px;
+  background: linear-gradient(180deg, var(--surface) 0%, transparent 100%);
+  position: sticky; top: 0; z-index: 10;
+}
+.profile-header-title {
+  font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+}
+.profile-header-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.profile-form { padding: 16px 20px 100px; }
+.profile-avatar-section {
+  display: flex; align-items: center; gap: 16px;
+  margin-bottom: 28px;
+}
+.avatar-circle {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; flex-shrink: 0; cursor: pointer;
+  transition: transform 0.2s; box-shadow: var(--glow);
+}
+.avatar-circle:hover { transform: scale(1.05); }
+.avatar-info h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; }
+.avatar-info p { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.section-title {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 13px;
+  color: var(--accent); text-transform: uppercase; letter-spacing: 1px;
+  margin: 24px 0 12px;
+}
+.skills-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.skill-tag {
+  padding: 6px 14px; border-radius: 100px;
+  background: rgba(79,110,247,0.15); border: 1px solid rgba(79,110,247,0.3);
+  font-size: 12px; color: var(--accent); cursor: pointer;
+  transition: all 0.2s;
+}
+.skill-tag.selected { background: var(--accent); color: white; border-color: var(--accent); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.profile-complete-btn {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  padding: 16px 20px 28px;
+  background: linear-gradient(0deg, var(--bg) 60%, transparent 100%);
+}
+
+/* ========== MAIN APP ========== */
+#screen-main { overflow: hidden; }
+.app-nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.nav-logo {
+  font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--neon));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.nav-tabs { display: flex; gap: 4px; }
+.nav-tab {
+  padding: 8px 14px; border: none; background: none;
+  color: var(--text2); font-family: 'DM Sans', sans-serif;
+  font-size: 13px; cursor: pointer; border-radius: 10px;
+  transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+}
+.nav-tab.active { background: rgba(79,110,247,0.15); color: var(--accent); }
+.nav-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer; flex-shrink: 0;
+  box-shadow: 0 0 0 2px rgba(79,110,247,0.4);
+}
+
+/* ========== SWIPE VIEW ========== */
+.swipe-view { flex: 1; display: flex; flex-direction: column; overflow: hidden; padding: 16px 20px 0; }
+.swipe-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px; flex-shrink: 0;
+}
+.swipe-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; }
+.swipe-count { font-size: 12px; color: var(--text2); }
+.filter-btn {
+  padding: 8px 14px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text2); font-size: 13px; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ========== CARD STACK ========== */
+.card-stack {
+  flex: 1; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.job-card {
+  position: absolute;
+  width: 100%; max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: var(--card-shadow);
+  cursor: grab;
+  transition: transform 0.1s, box-shadow 0.2s;
+  user-select: none;
+  touch-action: none;
+}
+.job-card:active { cursor: grabbing; }
+.job-card.card-2 {
+  transform: scale(0.95) translateY(16px);
+  z-index: 1; filter: brightness(0.7);
+}
+.job-card.card-3 {
+  transform: scale(0.90) translateY(32px);
+  z-index: 0; filter: brightness(0.4);
+}
+.job-card.card-top { z-index: 2; }
+.job-card.swiping-right {
+  transform: translateX(120%) rotate(20deg) !important;
+  transition: transform 0.4s cubic-bezier(0.25,1,0.5,1) !important;
+  opacity: 0;
+}
+.job-card.swiping-left {
+  transform: translateX(-120%) rotate(-20deg) !important;
+  transition: transform 0.4s cubic-bezier(0.25,1,0.5,1) !important;
+  opacity: 0;
+}
+.card-company-row {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 16px;
+}
+.company-logo {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+  background: var(--surface2);
+}
+.company-info h3 { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; }
+.company-info h2 { font-family: 'Syne', sans-serif; font-size: 19px; font-weight: 800; margin-top: 1px; }
+.match-badge {
+  margin-left: auto; flex-shrink: 0;
+  padding: 6px 12px; border-radius: 100px;
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+}
+.match-high { background: rgba(0,230,118,0.15); color: var(--green); border: 1px solid rgba(0,230,118,0.3); }
+.match-mid { background: rgba(255,214,0,0.15); color: var(--yellow); border: 1px solid rgba(255,214,0,0.3); }
+.match-low { background: rgba(255,71,87,0.15); color: var(--red); border: 1px solid rgba(255,71,87,0.3); }
+
+.card-divider { height: 1px; background: var(--border); margin: 14px 0; }
+.card-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.meta-tag {
+  padding: 5px 12px; border-radius: 8px;
+  background: var(--surface2); font-size: 12px; color: var(--text2);
+  display: flex; align-items: center; gap: 5px;
+}
+.meta-tag.level { background: rgba(79,110,247,0.12); color: var(--accent); }
+.meta-tag.remote { background: rgba(0,230,118,0.1); color: var(--green); }
+.card-salary {
+  font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 800;
+  color: var(--text); margin-bottom: 14px;
+}
+.card-salary span { font-size: 13px; color: var(--text2); font-weight: 400; font-family: 'DM Sans', sans-serif; }
+.card-skills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.card-skill {
+  padding: 4px 10px; border-radius: 6px; font-size: 11px;
+  background: var(--surface3); color: var(--text2);
+  font-family: 'DM Sans', monospace;
+}
+.card-skill.match { background: rgba(79,110,247,0.15); color: var(--accent); }
+.card-description {
+  font-size: 13px; color: var(--text2); line-height: 1.6;
+  margin-bottom: 16px;
+  display: -webkit-box; -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+.card-bar {
+  height: 6px; background: var(--surface2); border-radius: 100px;
+  margin-bottom: 6px; overflow: hidden;
+}
+.card-bar-fill {
+  height: 100%; border-radius: 100px;
+  background: linear-gradient(90deg, var(--accent), var(--neon));
+  transition: width 1s ease;
+}
+.card-bar-label {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--text2); margin-bottom: 16px;
+}
+/* Swipe feedback labels */
+.swipe-label {
+  position: absolute; top: 24px;
+  padding: 8px 18px; border-radius: 10px;
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 18px; letter-spacing: 2px;
+  opacity: 0; transition: opacity 0.1s; z-index: 10;
+  pointer-events: none;
+}
+.label-like { right: 24px; color: var(--green); border: 3px solid var(--green); transform: rotate(15deg); }
+.label-nope { left: 24px; color: var(--red); border: 3px solid var(--red); transform: rotate(-15deg); }
+
+/* ========== ACTION BUTTONS ========== */
+.action-buttons {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; padding: 20px 20px 24px; flex-shrink: 0;
+}
+.action-btn {
+  border: none; cursor: pointer; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.btn-dislike {
+  width: 60px; height: 60px; font-size: 24px;
+  background: var(--surface2); border: 2px solid rgba(255,71,87,0.3);
+  box-shadow: 0 8px 24px rgba(255,71,87,0.15);
+}
+.btn-dislike:hover { transform: scale(1.1); background: rgba(255,71,87,0.15); border-color: var(--red); }
+.btn-like {
+  width: 70px; height: 70px; font-size: 28px;
+  background: linear-gradient(135deg, #00b09b, #00e676);
+  box-shadow: 0 12px 32px rgba(0,230,118,0.35);
+}
+.btn-like:hover { transform: scale(1.12); box-shadow: 0 16px 40px rgba(0,230,118,0.5); }
+.btn-super {
+  width: 54px; height: 54px; font-size: 20px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  box-shadow: 0 8px 24px rgba(102,126,234,0.3);
+}
+.btn-super:hover { transform: scale(1.1); }
+.btn-info {
+  width: 54px; height: 54px; font-size: 20px;
+  background: var(--surface2); border: 2px solid rgba(0,229,255,0.3);
+}
+.btn-info:hover { border-color: var(--neon); background: rgba(0,229,255,0.1); }
+
+/* ========== DASHBOARD VIEW ========== */
+.dashboard-view {
+  flex: 1; overflow-y: auto; padding: 16px 20px 80px;
+  display: none;
+}
+.dashboard-view.active { display: block; }
+.stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; padding: 18px 16px;
+}
+.stat-card-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+.stat-card-value {
+  font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800;
+  background: linear-gradient(135deg, var(--accent), var(--neon));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.stat-card-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.applications-list { display: flex; flex-direction: column; gap: 10px; }
+.app-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 14px;
+}
+.app-logo {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--surface2); display: flex; align-items: center;
+  justify-content: center; font-size: 18px; flex-shrink: 0;
+}
+.app-info { flex: 1; min-width: 0; }
+.app-role { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.app-company { font-size: 12px; color: var(--text2); margin-top: 1px; }
+.app-status {
+  padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600;
+  flex-shrink: 0;
+}
+.status-sent { background: rgba(79,110,247,0.15); color: var(--accent); }
+.status-viewed { background: rgba(255,214,0,0.15); color: var(--yellow); }
+.status-process { background: rgba(0,230,118,0.15); color: var(--green); }
+.status-rejected { background: rgba(255,71,87,0.15); color: var(--red); }
+
+/* ========== PROFILE VIEW ========== */
+.profile-view {
+  flex: 1; overflow-y: auto; padding: 16px 20px 80px;
+  display: none;
+}
+.profile-view.active { display: block; }
+.profile-hero {
+  background: linear-gradient(135deg, var(--surface), var(--surface2));
+  border: 1px solid var(--border);
+  border-radius: 22px; padding: 24px;
+  margin-bottom: 16px; text-align: center;
+}
+.profile-hero-avatar {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin: 0 auto 14px;
+  box-shadow: var(--glow);
+}
+.profile-hero h2 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
+.profile-hero p { font-size: 13px; color: var(--text2); margin-top: 4px; }
+.profile-score {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 12px; padding: 6px 16px; border-radius: 100px;
+  background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.3);
+  font-size: 13px; color: var(--neon); font-weight: 600;
+}
+.profile-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 18px; padding: 20px; margin-bottom: 14px;
+}
+.profile-section-title {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px;
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.ai-suggestion {
+  background: linear-gradient(135deg, rgba(79,110,247,0.1), rgba(124,58,237,0.1));
+  border: 1px solid rgba(79,110,247,0.25);
+  border-radius: 14px; padding: 14px;
+  font-size: 13px; color: var(--text2); line-height: 1.6;
+  margin-bottom: 12px;
+}
+.ai-suggestion strong { color: var(--accent); }
+
+/* ========== AI MODAL ========== */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+  display: none; align-items: flex-end; justify-content: center;
+  padding: 0;
+}
+.modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+.modal-sheet {
+  background: var(--surface); border-radius: 28px 28px 0 0;
+  padding: 28px 24px 40px;
+  width: 100%; max-width: 500px;
+  animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  max-height: 92vh; overflow-y: auto;
+}
+.modal-handle {
+  width: 40px; height: 4px; border-radius: 100px;
+  background: var(--border); margin: 0 auto 20px;
+}
+.modal-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+.modal-sub { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+.detail-section { margin-bottom: 20px; }
+.detail-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+.detail-text { font-size: 14px; line-height: 1.7; color: var(--text2); }
+.btn-apply {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, var(--green), #00b09b);
+  border: none; border-radius: 14px; color: white;
+  font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; margin-top: 8px;
+  box-shadow: 0 8px 24px rgba(0,230,118,0.35);
+}
+.btn-apply:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(0,230,118,0.5); }
+.btn-outline {
+  width: 100%; padding: 13px;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 14px; color: var(--text2);
+  font-family: 'DM Sans', sans-serif; font-size: 14px;
+  cursor: pointer; transition: all 0.2s; margin-top: 8px;
+}
+.btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ========== TOAST ========== */
+.toast {
+  position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 12px 20px;
+  font-size: 14px; font-weight: 500; z-index: 200;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+  white-space: nowrap; box-shadow: var(--card-shadow);
+  display: flex; align-items: center; gap: 8px;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.hide { transform: translateX(-50%) translateY(-80px); opacity: 0; }
+.toast.success { border-color: rgba(0,230,118,0.4); }
+.toast.error { border-color: rgba(255,71,87,0.4); }
+
+/* ========== BOTTOM NAV ========== */
+.bottom-nav {
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 12px 0 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg); flex-shrink: 0;
+}
+.bnav-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border: none; background: none; cursor: pointer;
+  color: var(--text3); font-size: 11px; font-family: 'DM Sans', sans-serif;
+  transition: color 0.2s; padding: 4px 16px;
+}
+.bnav-btn.active { color: var(--accent); }
+.bnav-icon { font-size: 20px; }
+
+/* ========== FILTER PANEL ========== */
+.filter-panel {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+  display: none;
+}
+.filter-panel.open { display: flex; align-items: flex-end; }
+.filter-content {
+  background: var(--surface); border-radius: 28px 28px 0 0;
+  padding: 28px 24px 40px; width: 100%;
+  animation: slideUp 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.filter-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin-bottom: 24px; }
+.range-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text2); margin-top: 6px; }
+.filter-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.filter-chip {
+  padding: 7px 14px; border-radius: 100px;
+  background: var(--surface2); border: 1px solid var(--border);
+  font-size: 13px; color: var(--text2); cursor: pointer; transition: all 0.2s;
+}
+.filter-chip.active { background: rgba(79,110,247,0.15); border-color: var(--accent); color: var(--accent); }
+input[type=range] {
+  width: 100%; height: 4px; appearance: none;
+  background: var(--surface3); border-radius: 100px; outline: none; margin-top: 12px;
+}
+input[type=range]::-webkit-slider-thumb {
+  appearance: none; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); cursor: pointer;
+  box-shadow: 0 0 0 4px rgba(79,110,247,0.2);
+}
+
+/* ========== INTERVIEW MODAL ========== */
+.chat-container { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; max-height: 320px; overflow-y: auto; }
+.chat-msg { max-width: 85%; }
+.chat-msg.ai { align-self: flex-start; }
+.chat-msg.user { align-self: flex-end; }
+.chat-bubble {
+  padding: 12px 16px; border-radius: 18px; font-size: 13px; line-height: 1.6;
+}
+.chat-msg.ai .chat-bubble { background: var(--surface2); border-radius: 4px 18px 18px 18px; color: var(--text); }
+.chat-msg.user .chat-bubble { background: var(--accent); border-radius: 18px 4px 18px 18px; color: white; }
+.chat-input-row { display: flex; gap: 10px; }
+.chat-input {
+  flex: 1; padding: 12px 16px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 14px;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none;
+}
+.chat-input:focus { border-color: var(--accent); }
+.chat-send {
+  width: 46px; height: 46px; border: none;
+  background: var(--accent); border-radius: 12px;
+  color: white; font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.chat-send:hover { background: var(--accent2); }
+
+/* ========== AUTO APPLY INDICATOR ========== */
+.auto-apply-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 100px;
+  background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.3);
+  font-size: 12px; color: var(--neon); cursor: pointer; transition: all 0.2s;
+}
+.auto-apply-badge .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--neon); animation: pulse 2s infinite;
+}
+.auto-apply-badge.off { background: var(--surface2); border-color: var(--border); color: var(--text3); }
+.auto-apply-badge.off .dot { background: var(--text3); animation: none; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes cardIn { from { transform: scale(0.9) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 12px; padding: 60px 20px;
+  text-align: center;
+}
+.empty-state .icon { font-size: 64px; }
+.empty-state h3 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
+.empty-state p { font-size: 14px; color: var(--text2); max-width: 260px; line-height: 1.6; }
+
+.progress-ring {
+  transform: rotate(-90deg);
+}
+.loading-ai {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--text2); margin: 8px 0;
+}
+.loading-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); animation: bounce 1.4s infinite;
+}
+.loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.loading-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%,80%,100% { transform: scale(0); } 40% { transform: scale(1); } }
+</style>
+</head>
+<body>
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
+
+<div id="app">
+
+  <!-- ======== AUTH SCREEN ======== -->
+  <div class="screen active" id="screen-auth">
+    <div style="text-align:center; margin-bottom:8px;">
+      <div class="auth-logo">JobMatch AI</div>
+      <div class="auth-tagline">Seu próximo emprego está a um swipe ✨</div>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchTab('login')">Entrar</button>
+        <button class="auth-tab" onclick="switchTab('register')">Cadastrar</button>
+      </div>
+      <div id="login-form">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" placeholder="voce@email.com" id="login-email">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Senha</label>
+          <input class="form-input" type="password" placeholder="••••••••" id="login-pass">
+        </div>
+        <button class="btn-primary" onclick="doLogin()">Entrar →</button>
+        <div class="divider">ou continue com</div>
+        <button class="btn-oauth" onclick="oauthLogin('Google')">
+          <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Google
+        </button>
+        <button class="btn-oauth" onclick="oauthLogin('LinkedIn')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          LinkedIn
+        </button>
+      </div>
+      <div id="register-form" style="display:none">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nome</label>
+            <input class="form-input" type="text" placeholder="Seu nome" id="reg-name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sobrenome</label>
+            <input class="form-input" type="text" placeholder="Sobrenome">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input class="form-input" type="email" placeholder="voce@email.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Senha</label>
+          <input class="form-input" type="password" placeholder="Mínimo 8 caracteres">
+        </div>
+        <button class="btn-primary" onclick="doRegister()">Criar conta →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== PROFILE SETUP ======== -->
+  <div class="screen" id="screen-profile">
+    <div class="profile-header">
+      <div class="profile-header-title">🎯 Configure seu perfil</div>
+      <div class="profile-header-sub">Quanto mais detalhes, melhores os matches!</div>
+    </div>
+    <div class="profile-form">
+      <div class="profile-avatar-section">
+        <div class="avatar-circle" onclick="showToast('📸 Upload de foto em breve!','')">👤</div>
+        <div class="avatar-info">
+          <h3 id="profile-name-display">Seu Nome</h3>
+          <p>Toque no avatar para adicionar foto</p>
+        </div>
+      </div>
+      <div class="section-title">📍 Localização & Cargo</div>
+      <div class="form-group">
+        <label class="form-label">Cargo desejado</label>
+        <input class="form-input" type="text" placeholder="Ex: Front-end Developer" id="setup-role">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Cidade</label>
+          <input class="form-input" type="text" placeholder="Porto Alegre" id="setup-city">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Modalidade</label>
+          <select class="form-input" id="setup-mode">
+            <option value="remote">Remoto</option>
+            <option value="hybrid">Híbrido</option>
+            <option value="presential">Presencial</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Pretensão salarial (R$/mês)</label>
+        <input class="form-input" type="text" placeholder="Ex: R$ 8.000 - R$ 12.000" id="setup-salary">
+      </div>
+      <div class="section-title">🧠 Skills & Experiência</div>
+      <div class="form-group">
+        <label class="form-label">Nível de experiência</label>
+        <select class="form-input" id="setup-level">
+          <option>Júnior (0-2 anos)</option>
+          <option>Pleno (2-5 anos)</option>
+          <option>Sênior (5+ anos)</option>
+          <option>Tech Lead</option>
+        </select>
+      </div>
+      <div class="form-label" style="margin-bottom:10px">Selecione suas skills:</div>
+      <div class="skills-container" id="skills-container"></div>
+      <div class="section-title">✍️ Bio Profissional</div>
+      <div class="form-group">
+        <textarea class="form-input" rows="4" placeholder="Descreva brevemente sua experiência, projetos e o que busca..." style="resize:none; line-height:1.6" id="setup-bio"></textarea>
+      </div>
+      <div class="section-title">📄 Currículo</div>
+      <div style="background:var(--surface2); border:2px dashed var(--border); border-radius:16px; padding:24px; text-align:center; cursor:pointer; transition:all 0.2s" onclick="showToast('📄 Upload e editor de CV em breve!','')">
+        <div style="font-size:32px; margin-bottom:8px">📎</div>
+        <div style="font-size:14px; color:var(--text2)">Arraste seu currículo ou clique para fazer upload</div>
+        <div style="font-size:12px; color:var(--text3); margin-top:4px">PDF, DOCX • Máx. 5MB</div>
+      </div>
+    </div>
+    <div class="profile-complete-btn">
+      <button class="btn-primary" onclick="completeProfile()">Começar a encontrar vagas 🚀</button>
+    </div>
+  </div>
+
+  <!-- ======== MAIN APP SCREEN ======== -->
+  <div class="screen" id="screen-main">
+    <div class="app-nav">
+      <div class="nav-logo">JobMatch</div>
+      <div style="display:flex; align-items:center; gap:10px">
+        <div class="auto-apply-badge off" id="auto-apply-badge" onclick="toggleAutoApply()">
+          <span class="dot"></span>
+          <span id="auto-apply-text">Auto Apply</span>
+        </div>
+        <div class="nav-avatar" onclick="switchView('profile-view')">👤</div>
+      </div>
+    </div>
+
+    <!-- Swipe View -->
+    <div class="swipe-view" id="swipe-area" style="display:none">
+      <div class="swipe-header">
+        <div>
+          <div class="swipe-title">Vagas pra você 🔥</div>
+          <div class="swipe-count" id="remaining-count">8 vagas restantes</div>
+        </div>
+        <button class="filter-btn" onclick="openFilter()">⚙️ Filtros</button>
+      </div>
+      <div class="card-stack" id="card-stack">
+        <!-- Cards injected by JS -->
+      </div>
+      <div class="action-buttons">
+        <button class="action-btn btn-dislike" onclick="swipeCard('left')" title="Ignorar">✕</button>
+        <button class="action-btn btn-info" onclick="openDetail()" title="Ver detalhes">🔍</button>
+        <button class="action-btn btn-super" onclick="swipeCard('super')" title="Super Like">⭐</button>
+        <button class="action-btn btn-like" onclick="swipeCard('right')" title="Aplicar">❤️</button>
+      </div>
+    </div>
+
+    <!-- Dashboard View -->
+    <div class="dashboard-view" id="dashboard-view">
+      <div style="font-family:'Syne',sans-serif; font-size:20px; font-weight:800; margin-bottom:20px">
+        📊 Seu Dashboard
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-card-label">Aplicações</div>
+          <div class="stat-card-value" id="stat-applied">0</div>
+          <div class="stat-card-sub">este mês</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Taxa de resposta</div>
+          <div class="stat-card-value">34%</div>
+          <div class="stat-card-sub">acima da média</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Match médio</div>
+          <div class="stat-card-value">76%</div>
+          <div class="stat-card-sub">excelente!</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-label">Em processo</div>
+          <div class="stat-card-value" id="stat-process">0</div>
+          <div class="stat-card-sub">entrevistas</div>
+        </div>
+      </div>
+      <div style="font-family:'Syne',sans-serif; font-weight:700; font-size:14px; margin-bottom:14px">
+        🗂 Candidaturas recentes
+      </div>
+      <div class="applications-list" id="applications-list">
+        <div class="empty-state" style="padding:30px">
+          <div class="icon">📋</div>
+          <p>Suas candidaturas aparecerão aqui</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile View -->
+    <div class="profile-view" id="profile-view">
+      <div class="profile-hero">
+        <div class="profile-hero-avatar">👤</div>
+        <h2 id="profile-hero-name">Seu Nome</h2>
+        <p id="profile-hero-role">Cargo desejado • Cidade</p>
+        <div class="profile-score">⚡ Score de perfil: <strong>72/100</strong></div>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-title">🤖 Sugestões da IA</div>
+        <div class="ai-suggestion">
+          <strong>💡 Dica:</strong> Adicionar projetos do GitHub ao seu perfil pode aumentar seu match em até <strong>23%</strong> com vagas de desenvolvimento.
+        </div>
+        <div class="ai-suggestion">
+          <strong>🎯 Tendência:</strong> Vagas pedindo <strong>TypeScript + React</strong> cresceram 41% — considere destacar essas skills.
+        </div>
+        <button class="btn-outline" onclick="openInterviewModal()">🗣 Simular entrevista com IA</button>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-title">📄 Currículo</div>
+        <button class="btn-outline" onclick="showToast('Editor de CV em breve!','')">✏️ Editar currículo</button>
+        <button class="btn-outline" style="margin-top:8px" onclick="showToast('Exportação PDF em breve!','')">📥 Exportar PDF</button>
+      </div>
+      <div class="profile-section">
+        <div class="profile-section-title">⚙️ Configurações</div>
+        <button class="btn-outline" onclick="showToast('Notificações configuradas!','success')">🔔 Notificações</button>
+        <button class="btn-outline" style="margin-top:8px; color:var(--red)" onclick="logout()">↩️ Sair</button>
+      </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav">
+      <button class="bnav-btn active" id="bnav-swipe" onclick="switchView('swipe-area')">
+        <span class="bnav-icon">💼</span>
+        Vagas
+      </button>
+      <button class="bnav-btn" id="bnav-dash" onclick="switchView('dashboard-view')">
+        <span class="bnav-icon">📊</span>
+        Dashboard
+      </button>
+      <button class="bnav-btn" id="bnav-profile" onclick="switchView('profile-view')">
+        <span class="bnav-icon">👤</span>
+        Perfil
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== DETAIL MODAL ======== -->
+<div class="modal-overlay" id="detail-modal" onclick="closeModal('detail-modal')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div id="modal-company-badge" style="font-size:36px; margin-bottom:12px">🏢</div>
+    <div class="modal-title" id="modal-job-title">Cargo</div>
+    <div class="modal-sub" id="modal-company-name">Empresa</div>
+    <div class="detail-section">
+      <div class="detail-label">Localização</div>
+      <div class="detail-text" id="modal-location">-</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">Salário</div>
+      <div class="detail-text" id="modal-salary">-</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">Descrição</div>
+      <div class="detail-text" id="modal-description">-</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">Skills necessárias</div>
+      <div id="modal-skills" style="display:flex; flex-wrap:wrap; gap:6px; margin-top:6px"></div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-label">Compatibilidade</div>
+      <div class="card-bar"><div class="card-bar-fill" id="modal-match-bar"></div></div>
+      <div class="card-bar-label"><span>Match com seu perfil</span><span id="modal-match-pct">0%</span></div>
+    </div>
+    <button class="btn-apply" onclick="applyFromModal()">❤️ Aplicar agora</button>
+    <button class="btn-outline" onclick="closeModal('detail-modal')">Fechar</button>
+  </div>
+</div>
+
+<!-- ======== INTERVIEW MODAL ======== -->
+<div class="modal-overlay" id="interview-modal" onclick="closeModal('interview-modal')">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🗣 Simulador de Entrevista</div>
+    <div class="modal-sub">Pratique com nossa IA e aumente suas chances!</div>
+    <div class="chat-container" id="chat-container"></div>
+    <div class="loading-ai" id="chat-loading" style="display:none">
+      <div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>
+      <span>IA pensando...</span>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" type="text" placeholder="Sua resposta..." id="chat-input" onkeypress="if(event.key==='Enter')sendChatMsg()">
+      <button class="chat-send" onclick="sendChatMsg()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======== FILTER PANEL ======== -->
+<div class="filter-panel" id="filter-panel" onclick="closeFilter()">
+  <div class="filter-content" onclick="event.stopPropagation()">
+    <div class="filter-title">⚙️ Filtros</div>
+    <div class="section-title">Salário mínimo</div>
+    <input type="range" min="2000" max="30000" step="500" value="6000" id="salary-range" oninput="updateSalaryLabel()">
+    <div class="range-row"><span>R$ 2.000</span><span id="salary-label">R$ 6.000</span><span>R$ 30.000+</span></div>
+    <div class="section-title" style="margin-top:20px">Modalidade</div>
+    <div class="filter-chips" id="mode-chips">
+      <div class="filter-chip active" onclick="toggleChip(this)">🌐 Remoto</div>
+      <div class="filter-chip active" onclick="toggleChip(this)">🏙 Híbrido</div>
+      <div class="filter-chip" onclick="toggleChip(this)">🏢 Presencial</div>
+    </div>
+    <div class="section-title" style="margin-top:20px">Nível</div>
+    <div class="filter-chips" id="level-chips">
+      <div class="filter-chip active" onclick="toggleChip(this)">🌱 Júnior</div>
+      <div class="filter-chip active" onclick="toggleChip(this)">🔥 Pleno</div>
+      <div class="filter-chip active" onclick="toggleChip(this)">⭐ Sênior</div>
+    </div>
+    <button class="btn-primary" style="margin-top:24px" onclick="applyFilters()">Aplicar filtros</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const JOBS = [
+  {
+    id:1, emoji:'🚀', company:'Nubank', role:'Senior Front-end Engineer',
+    salary:'R$ 18.000 – R$ 24.000', location:'🌐 Remoto', level:'Sênior',
+    skills:['React','TypeScript','GraphQL','Node.js','AWS'],
+    match:92, description:'Buscamos um engenheiro front-end para integrar nosso time de produto. Você trabalhará em sistemas financeiros de alta escala, com impacto direto em milhões de usuários.',
+    remote:true,
+  },
+  {
+    id:2, emoji:'🎮', company:'Wildlife Studios', role:'Game Frontend Developer',
+    salary:'R$ 12.000 – R$ 16.000', location:'🏙 Híbrido – SP', level:'Pleno',
+    skills:['Unity','JavaScript','C#','WebGL','React'],
+    match:78, description:'Faça parte do time de desenvolvimento de jogos mobile da maior empresa de games da América Latina. Missão: criar experiências que encantam.',
+    remote:false,
+  },
+  {
+    id:3, emoji:'🛒', company:'VTEX', role:'Software Engineer II',
+    salary:'R$ 14.000 – R$ 19.000', location:'🌐 Remoto', level:'Pleno',
+    skills:['React','TypeScript','Node.js','GraphQL','Docker'],
+    match:85, description:'Ajude a construir o futuro do e-commerce global. Na VTEX você trabalhará com tecnologia de ponta e terá impacto direto em grandes varejistas do mundo todo.',
+    remote:true,
+  },
+  {
+    id:4, emoji:'🏦', company:'Inter', role:'React Developer',
+    salary:'R$ 10.000 – R$ 13.000', location:'🏙 Híbrido – BH', level:'Pleno',
+    skills:['React','Vue.js','JavaScript','CSS','REST API'],
+    match:71, description:'O Banco Inter está crescendo rápido e precisa de desenvolvedores apaixonados por criar produtos financeiros modernos e acessíveis.',
+    remote:false,
+  },
+  {
+    id:5, emoji:'🤖', company:'C6 Bank', role:'Frontend Engineer Jr',
+    salary:'R$ 7.000 – R$ 9.000', location:'🌐 Remoto', level:'Júnior',
+    skills:['React','JavaScript','CSS','HTML','Git'],
+    match:88, description:'Inicie sua carreira no C6 Bank! Você terá mentoria de engenheiros sêniores e trabalhará em projetos com impacto real desde o primeiro dia.',
+    remote:true,
+  },
+  {
+    id:6, emoji:'💡', company:'Totvs', role:'Tech Lead Front-end',
+    salary:'R$ 20.000 – R$ 28.000', location:'🏢 São Paulo', level:'Tech Lead',
+    skills:['React','Angular','Architecture','CI/CD','Mentoring'],
+    match:64, description:'Lidere um time de alto desempenho na maior empresa de software do Brasil. Você definirá arquiteturas e padrões que impactarão toda a plataforma.',
+    remote:false,
+  },
+  {
+    id:7, emoji:'✈️', company:'Hurb', role:'Vue.js Developer',
+    salary:'R$ 11.000 – R$ 14.000', location:'🌐 Remoto', level:'Pleno',
+    skills:['Vue.js','Nuxt.js','TypeScript','Tailwind','REST'],
+    match:74, description:'Junte-se ao maior clube de viagens do Brasil! Trabalhamos com tecnologia para fazer as pessoas viajarem mais e melhor.',
+    remote:true,
+  },
+  {
+    id:8, emoji:'🏥', company:'Dasa', role:'React Native Engineer',
+    salary:'R$ 13.000 – R$ 17.000', location:'🌐 Remoto', level:'Sênior',
+    skills:['React Native','iOS','Android','TypeScript','Redux'],
+    match:81, description:'Trabalhe no maior grupo de saúde digital do Brasil. Seu código vai impactar a saúde de milhares de pacientes diariamente.',
+    remote:true,
+  },
+];
+
+const SKILLS_LIST = ['React','TypeScript','JavaScript','Node.js','Vue.js','Angular','Python','Java','AWS','Docker','GraphQL','REST API','CSS','HTML','Git','Redux','Next.js','PostgreSQL','MongoDB','Figma'];
+
+// ============================================================
+// STATE
+// ============================================================
+let state = {
+  currentUser: null,
+  jobQueue: [...JOBS],
+  currentCardIdx: 0,
+  applied: [],
+  autoApply: false,
+  selectedSkills: [],
+  chatHistory: [],
+};
+
+// ============================================================
+// AUTH
+// ============================================================
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t,i)=> t.classList.toggle('active', (tab==='login'&&i===0)||(tab==='register'&&i===1)));
+  document.getElementById('login-form').style.display = tab==='login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab==='register' ? 'block' : 'none';
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value || 'usuario@jobmatch.ai';
+  if (!email) { showToast('❌ Informe seu email','error'); return; }
+  state.currentUser = { name: 'Usuário', email };
+  goToProfileSetup();
+}
+
+function doRegister() {
+  const name = document.getElementById('reg-name').value;
+  if (!name) { showToast('❌ Informe seu nome','error'); return; }
+  state.currentUser = { name, email: '' };
+  document.getElementById('profile-name-display').textContent = name;
+  goToProfileSetup();
+}
+
+function oauthLogin(provider) {
+  showToast(`🔑 Conectando ao ${provider}...`,'');
+  setTimeout(()=>{
+    state.currentUser = { name: provider==='Google' ? 'João Silva' : 'Ana Lima', email:`user@${provider.toLowerCase()}.com` };
+    document.getElementById('profile-name-display').textContent = state.currentUser.name;
+    goToProfileSetup();
+  }, 1200);
+}
+
+function goToProfileSetup() {
+  // populate skills
+  const sc = document.getElementById('skills-container');
+  sc.innerHTML = SKILLS_LIST.map(s=>`<div class="skill-tag" onclick="toggleSkill(this,'${s}')">${s}</div>`).join('');
+  switchScreen('screen-profile');
+}
+
+function toggleSkill(el, skill) {
+  el.classList.toggle('selected');
+  if (el.classList.contains('selected')) state.selectedSkills.push(skill);
+  else state.selectedSkills = state.selectedSkills.filter(s=>s!==skill);
+}
+
+function completeProfile() {
+  state.currentUser.role = document.getElementById('setup-role').value || 'Developer';
+  state.currentUser.city = document.getElementById('setup-city').value || 'Porto Alegre';
+  state.currentUser.salary = document.getElementById('setup-salary').value || 'A combinar';
+  state.currentUser.skills = state.selectedSkills;
+  document.getElementById('profile-hero-name').textContent = state.currentUser.name;
+  document.getElementById('profile-hero-role').textContent = `${state.currentUser.role} • ${state.currentUser.city}`;
+  switchScreen('screen-main');
+  switchView('swipe-area');
+  renderCards();
+}
+
+function logout() {
+  state = { currentUser:null, jobQueue:[...JOBS], currentCardIdx:0, applied:[], autoApply:false, selectedSkills:[], chatHistory:[] };
+  switchScreen('screen-auth');
+  showToast('👋 Até logo!','');
+}
+
+// ============================================================
+// SCREEN & VIEW
+// ============================================================
+function switchScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>{ s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+}
+
+function switchView(id) {
+  // Hide all views
+  document.getElementById('swipe-area').style.display='none';
+  document.getElementById('dashboard-view').classList.remove('active');
+  document.getElementById('profile-view').classList.remove('active');
+  // Update bottom nav
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
+  if (id==='swipe-area') {
+    document.getElementById('swipe-area').style.display='flex';
+    document.getElementById('bnav-swipe').classList.add('active');
+  } else if (id==='dashboard-view') {
+    document.getElementById('dashboard-view').classList.add('active');
+    document.getElementById('bnav-dash').classList.add('active');
+  } else if (id==='profile-view') {
+    document.getElementById('profile-view').classList.add('active');
+    document.getElementById('bnav-profile').classList.add('active');
+  }
+}
+
+// ============================================================
+// CARDS
+// ============================================================
+function renderCards() {
+  const stack = document.getElementById('card-stack');
+  stack.innerHTML = '';
+  const remaining = state.jobQueue.slice(state.currentCardIdx);
+  document.getElementById('remaining-count').textContent = `${remaining.length} vaga${remaining.length!==1?'s':''} restante${remaining.length!==1?'s':''}`;
+
+  if (remaining.length === 0) {
+    stack.innerHTML = `<div class="empty-state"><div class="icon">🎉</div><h3>Você viu tudo!</h3><p>Novas vagas são adicionadas diariamente. Volte amanhã!</p><button class="btn-primary" style="margin-top:16px;width:auto;padding:12px 24px" onclick="resetQueue()">🔄 Reiniciar</button></div>`;
+    return;
+  }
+
+  const show = Math.min(3, remaining.length);
+  for (let i=show-1; i>=0; i--) {
+    const job = remaining[i];
+    const card = createCard(job, i);
+    stack.appendChild(card);
+  }
+
+  // Set up drag on top card
+  const topCard = stack.querySelector('.card-top');
+  if (topCard) setupDrag(topCard);
+}
+
+function createCard(job, stackPos) {
+  const matchClass = job.match>=85 ? 'match-high' : job.match>=70 ? 'match-mid' : 'match-low';
+  const card = document.createElement('div');
+  card.className = `job-card ${stackPos===0?'card-top':stackPos===1?'card-2':'card-3'}`;
+  card.dataset.id = job.id;
+
+  const skillsHTML = job.skills.map(s=>{
+    const isMatch = state.selectedSkills.includes(s);
+    return `<span class="card-skill ${isMatch?'match':''}">${s}</span>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="swipe-label label-like">LIKE ❤️</div>
+    <div class="swipe-label label-nope">✕ NOPE</div>
+    <div class="card-company-row">
+      <div class="company-logo">${job.emoji}</div>
+      <div class="company-info">
+        <h3>${job.company}</h3>
+        <h2>${job.role}</h2>
+      </div>
+      <div class="match-badge ${matchClass}">${job.match}%</div>
+    </div>
+    <div class="card-divider"></div>
+    <div class="card-meta">
+      <span class="meta-tag">${job.location}</span>
+      <span class="meta-tag level">📊 ${job.level}</span>
+      ${job.remote ? '<span class="meta-tag remote">✓ Remoto</span>' : ''}
+    </div>
+    <div class="card-salary">${job.salary} <span>/ mês</span></div>
+    <div class="card-skills">${skillsHTML}</div>
+    <div class="card-description">${job.description}</div>
+    <div class="card-bar"><div class="card-bar-fill" style="width:${job.match}%"></div></div>
+    <div class="card-bar-label"><span>🤖 Match com seu perfil</span><span>${job.match}%</span></div>
+  `;
+
+  if (stackPos===0) card.style.animation = 'cardIn 0.4s ease';
+  return card;
+}
+
+// ============================================================
+// DRAG / SWIPE
+// ============================================================
+let dragState = { dragging:false, startX:0, startY:0, curX:0, card:null };
+
+function setupDrag(card) {
+  card.addEventListener('mousedown', dragStart);
+  card.addEventListener('touchstart', dragStart, {passive:true});
+}
+
+function dragStart(e) {
+  dragState.dragging = true;
+  dragState.card = e.currentTarget;
+  const pt = e.touches ? e.touches[0] : e;
+  dragState.startX = pt.clientX;
+  dragState.startY = pt.clientY;
+  document.addEventListener('mousemove', dragMove);
+  document.addEventListener('mouseup', dragEnd);
+  document.addEventListener('touchmove', dragMove, {passive:false});
+  document.addEventListener('touchend', dragEnd);
+}
+
+function dragMove(e) {
+  if (!dragState.dragging) return;
+  if (e.cancelable) e.preventDefault();
+  const pt = e.touches ? e.touches[0] : e;
+  dragState.curX = pt.clientX - dragState.startX;
+  const curY = pt.clientY - dragState.startY;
+  const rot = dragState.curX * 0.08;
+  dragState.card.style.transform = `translateX(${dragState.curX}px) translateY(${curY}px) rotate(${rot}deg)`;
+  dragState.card.style.transition = 'none';
+
+  const likeLabel = dragState.card.querySelector('.label-like');
+  const nopeLabel = dragState.card.querySelector('.label-nope');
+  const ratio = Math.abs(dragState.curX)/120;
+  if (dragState.curX > 20) { likeLabel.style.opacity = Math.min(ratio,1); nopeLabel.style.opacity=0; }
+  else if (dragState.curX < -20) { nopeLabel.style.opacity = Math.min(ratio,1); likeLabel.style.opacity=0; }
+  else { likeLabel.style.opacity=0; nopeLabel.style.opacity=0; }
+}
+
+function dragEnd() {
+  if (!dragState.dragging) return;
+  dragState.dragging = false;
+  document.removeEventListener('mousemove', dragMove);
+  document.removeEventListener('mouseup', dragEnd);
+  document.removeEventListener('touchmove', dragMove);
+  document.removeEventListener('touchend', dragEnd);
+
+  const threshold = 100;
+  if (dragState.curX > threshold) swipeCard('right');
+  else if (dragState.curX < -threshold) swipeCard('left');
+  else {
+    // snap back
+    dragState.card.style.transition = 'transform 0.4s cubic-bezier(0.34,1.56,0.64,1)';
+    dragState.card.style.transform = '';
+    dragState.card.querySelector('.label-like').style.opacity=0;
+    dragState.card.querySelector('.label-nope').style.opacity=0;
+  }
+}
+
+function swipeCard(direction) {
+  const stack = document.getElementById('card-stack');
+  const topCard = stack.querySelector('.card-top');
+  if (!topCard) return;
+
+  const job = state.jobQueue[state.currentCardIdx];
+
+  if (direction==='right' || direction==='super') {
+    topCard.classList.add('swiping-right');
+    applyToJob(job, direction==='super');
+  } else {
+    topCard.classList.add('swiping-left');
+  }
+
+  setTimeout(()=>{
+    state.currentCardIdx++;
+    renderCards();
+  }, 380);
+}
+
+function applyToJob(job, isSuper=false) {
+  state.applied.push({ ...job, status:'sent', date: new Date().toLocaleDateString('pt-BR') });
+  updateDashboard();
+  updateStatApplied();
+  if (isSuper) showToast(`⭐ Super Like enviado para ${job.company}!`,'success');
+  else showToast(`❤️ Candidatura enviada para ${job.company}!`,'success');
+}
+
+function resetQueue() {
+  state.currentCardIdx = 0;
+  state.jobQueue = [...JOBS].sort(()=>Math.random()-0.5);
+  renderCards();
+}
+
+// ============================================================
+// DETAIL MODAL
+// ============================================================
+function openDetail() {
+  const job = state.jobQueue[state.currentCardIdx];
+  if (!job) return;
+  document.getElementById('modal-company-badge').textContent = job.emoji;
+  document.getElementById('modal-job-title').textContent = job.role;
+  document.getElementById('modal-company-name').textContent = `${job.company} • ${job.level}`;
+  document.getElementById('modal-location').textContent = job.location;
+  document.getElementById('modal-salary').textContent = job.salary + '/mês';
+  document.getElementById('modal-description').textContent = job.description;
+  document.getElementById('modal-match-bar').style.width = job.match+'%';
+  document.getElementById('modal-match-pct').textContent = job.match+'%';
+  const skillsEl = document.getElementById('modal-skills');
+  skillsEl.innerHTML = job.skills.map(s=>`<span class="card-skill ${state.selectedSkills.includes(s)?'match':''}">${s}</span>`).join('');
+  openModal('detail-modal');
+}
+
+function applyFromModal() {
+  const job = state.jobQueue[state.currentCardIdx];
+  if (job) { applyToJob(job); closeModal('detail-modal'); swipeCard('right'); }
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function updateDashboard() {
+  const list = document.getElementById('applications-list');
+  if (state.applied.length===0) {
+    list.innerHTML = `<div class="empty-state" style="padding:30px"><div class="icon">📋</div><p>Suas candidaturas aparecerão aqui</p></div>`;
+    return;
+  }
+  const statusMap = { sent:'status-sent', viewed:'status-viewed', process:'status-process', rejected:'status-rejected' };
+  const statusLabel = { sent:'✉️ Enviado', viewed:'👁 Visualizado', process:'🔄 Em processo', rejected:'❌ Rejeitado' };
+  list.innerHTML = state.applied.slice().reverse().map(app=>`
+    <div class="app-item">
+      <div class="app-logo">${app.emoji}</div>
+      <div class="app-info">
+        <div class="app-role">${app.role}</div>
+        <div class="app-company">${app.company} • ${app.date}</div>
+      </div>
+      <span class="app-status ${statusMap[app.status]}">${statusLabel[app.status]}</span>
+    </div>
+  `).join('');
+}
+
+function updateStatApplied() {
+  document.getElementById('stat-applied').textContent = state.applied.length;
+  document.getElementById('stat-process').textContent = state.applied.filter(a=>a.status==='process').length;
+}
+
+// ============================================================
+// INTERVIEW MODAL (AI-POWERED)
+// ============================================================
+const interviewQuestions = [
+  'Olá! Serei seu entrevistador hoje. Me fale um pouco sobre você e sua trajetória profissional.',
+  'Qual foi o maior desafio técnico que você enfrentou e como o resolveu?',
+  'Como você lida com prazos apertados e pressão no dia a dia de trabalho?',
+  'Descreva uma situação onde você teve que aprender uma tecnologia nova rapidamente.',
+  'Onde você se vê daqui a 3 anos em termos de carreira?',
+];
+let qIdx = 0;
+
+function openInterviewModal() {
+  qIdx = 0;
+  state.chatHistory = [];
+  const container = document.getElementById('chat-container');
+  container.innerHTML = '';
+  addChatMsg('ai', interviewQuestions[0]);
+  openModal('interview-modal');
+}
+
+function addChatMsg(role, text) {
+  const container = document.getElementById('chat-container');
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  div.innerHTML = `<div class="chat-bubble">${text}</div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendChatMsg() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  addChatMsg('user', text);
+  input.value = '';
+  state.chatHistory.push({ role:'user', text });
+
+  const loading = document.getElementById('chat-loading');
+  loading.style.display='flex';
+
+  // Call AI
+  callInterviewAI(text).then(response=>{
+    loading.style.display='none';
+    addChatMsg('ai', response);
+    state.chatHistory.push({ role:'ai', text:response });
+  });
+}
+
+async function callInterviewAI(userAnswer) {
+  try {
+    const history = state.chatHistory.map(m=>({ role: m.role==='user'?'user':'assistant', content: m.text }));
+    const messages = [
+      ...history,
+      { role:'user', content: userAnswer }
+    ];
+    const sysPrompt = `Você é um entrevistador experiente de tecnologia conduzindo uma entrevista em português brasileiro. Seja cordial, profissional e construtivo. Após ouvir a resposta do candidato, faça um breve comentário positivo e incentivador (1-2 frases) e então faça a próxima pergunta: "${interviewQuestions[Math.min(++qIdx, interviewQuestions.length-1)]}". Se já fez todas as perguntas, dê um feedback final gentil e construtivo sobre a entrevista. Seja breve e direto.`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:300,
+        system: sysPrompt,
+        messages,
+      })
+    });
+    const data = await res.json();
+    return data.content?.[0]?.text || 'Obrigado pela sua resposta! Continue, você está indo bem.';
+  } catch(e) {
+    return 'Ótima resposta! Me conte mais sobre sua experiência com trabalho em equipe.';
+  }
+}
+
+// ============================================================
+// AUTO APPLY
+// ============================================================
+function toggleAutoApply() {
+  state.autoApply = !state.autoApply;
+  const badge = document.getElementById('auto-apply-badge');
+  const text = document.getElementById('auto-apply-text');
+  badge.classList.toggle('off', !state.autoApply);
+  text.textContent = state.autoApply ? 'Auto Apply ON' : 'Auto Apply';
+  showToast(state.autoApply ? '🤖 Auto Apply ativado! Aplicando em vagas com +80% match' : '⏹ Auto Apply desativado', state.autoApply ? 'success' : '');
+
+  if (state.autoApply) {
+    // Simulate auto-applying
+    setTimeout(()=>{
+      if (state.autoApply && state.jobQueue[state.currentCardIdx]) {
+        const job = state.jobQueue[state.currentCardIdx];
+        if (job.match >= 80) { applyToJob(job); swipeCard('right'); }
+      }
+    }, 2500);
+  }
+}
+
+// ============================================================
+// FILTER
+// ============================================================
+function openFilter() { document.getElementById('filter-panel').classList.add('open'); }
+function closeFilter() { document.getElementById('filter-panel').classList.remove('open'); }
+function toggleChip(el) { el.classList.toggle('active'); }
+function updateSalaryLabel() {
+  const val = document.getElementById('salary-range').value;
+  document.getElementById('salary-label').textContent = `R$ ${parseInt(val).toLocaleString('pt-BR')}`;
+}
+function applyFilters() { closeFilter(); showToast('✅ Filtros aplicados!','success'); }
+
+// ============================================================
+// MODALS & TOAST
+// ============================================================
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+let toastTimer = null;
+function showToast(msg, type='') {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = `toast show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ toast.classList.add('hide'); setTimeout(()=>{ toast.className='toast'; },300); },2800);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('keydown', e=>{
+  if (document.getElementById('screen-main').classList.contains('active')) {
+    if (e.key==='ArrowRight') swipeCard('right');
+    if (e.key==='ArrowLeft') swipeCard('left');
+    if (e.key==='ArrowUp') swipeCard('super');
+    if (e.key==='i'||e.key==='I') openDetail();
+  }
+});
+</script>
+</body>
+</html>
